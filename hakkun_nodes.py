@@ -265,13 +265,19 @@ class PromptParser:
         return [s for s in arr if s.strip()]
 
     def process_extra(self, text, placeholder, extra=None):
-        if isEmpty(extra):
-            if placeholder in text:
-                return text.replace(placeholder, '')
-            return text
-        if placeholder in text:
-            return text.replace(placeholder, extra)
-        return extra +', '+ text
+    # First, define what it means for 'extra' to be empty.
+    def isEmpty(value):
+        return value is None or value == ''
+
+    if isEmpty(extra):
+        # Remove the placeholder from the text if 'extra' is empty.
+        return text.replace(placeholder, '')
+    if placeholder in text:
+        # Replace the placeholder with 'extra' directly.
+        return text.replace(placeholder, extra)
+    # Append 'extra' to the text if placeholder is not found, ensuring a comma separates if text is not empty.
+    return text + (', ' + extra if text else extra)
+
 
     def fix_commas(self, text):
         elements = text.split(",")
@@ -286,8 +292,8 @@ class PromptParser:
 
         prompt = remove_comments(prompt)
 
-        prompt = self.process_extra(prompt, "<extra2>", extra2)
-        prompt = self.process_extra(prompt, "<extra1>", extra1)
+        prompt = self.process_extra(prompt, "extra2", extra2)
+        prompt = self.process_extra(prompt, "extra1", extra1)
 
         if isOk(tags):
             tags = remove_empty_lines(tags)
